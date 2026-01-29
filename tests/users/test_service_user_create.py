@@ -1,4 +1,5 @@
 import pytest
+import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -7,14 +8,15 @@ from app.users.service import create_user
 from app.users.roles import UserRole
 from app.core.security import verify_password
 from app.users.models import User
-from app.users.exceptions import UserAlreadyExistsError
 
 
-@pytest.mark.asyncio
+pytestmark = pytest.mark.asyncio
+
+
 async def test_create_user_success(db: AsyncSession):
     user_in = UserCreate(
         name="John Doe",
-        phone_number="+380501234567",
+        phone_number=f"+38050{uuid.uuid4().int % 10**7:07}",
         email="john@test.com",
         password="secret123",
         role=UserRole.ELECTRICIAN,
@@ -29,7 +31,7 @@ async def test_create_user_success(db: AsyncSession):
     assert isinstance(user, User)
     assert user.id is not None
     assert user.name == "John Doe"
-    assert user.phone_number == "+380501234567"
+    assert user.phone_number == user_in.phone_number
     assert user.email == "john@test.com"
     assert user.role == UserRole.ELECTRICIAN
     assert user.is_active is True
@@ -51,7 +53,6 @@ async def test_create_user_normalizes_phone(db):
     assert user.id is not None
 
 
-@pytest.mark.asyncio
 async def test_create_user_password_is_hashed(db: AsyncSession):
     user_in = UserCreate(
         name="Jack Doe",
@@ -69,7 +70,6 @@ async def test_create_user_password_is_hashed(db: AsyncSession):
     assert verify_password("plain-password", user.hashed_password)
 
 
-@pytest.mark.asyncio
 async def test_create_user_persisted(db: AsyncSession):
     user_in = UserCreate(
         name="Persisted User",
@@ -92,9 +92,11 @@ async def test_create_user_persisted(db: AsyncSession):
     assert db_user.id == user.id
 
 
-@pytest.mark.asyncio
 async def test_create_user_does_not_allow_mass_assignment(db: AsyncSession):
-    """Test that fields like is_superuser and created_at cannot be set via UserCreate schema."""
+    """
+    Test that fields like is_superuser and 
+    created_at cannot be set via UserCreate schema.
+    """
     user_in = UserCreate(
         name="Safe User",
         phone_number="+380508888888",
@@ -109,4 +111,3 @@ async def test_create_user_does_not_allow_mass_assignment(db: AsyncSession):
 
     assert not hasattr(user, "is_superuser")
     assert not hasattr(user, "created_at") or user.created_at is not None
-

@@ -17,6 +17,7 @@ from app.core.security import get_password_hash as hash_password
 from app.core.config import settings
 from app.users.models import User
 from app.users.roles import UserRole
+from tests.factories.user import create_user
 
 
 # EVENT LOOP (required for pytest + asyncio on some platforms)
@@ -80,6 +81,13 @@ async def override_get_db(db: AsyncSession):
 async def client() -> AsyncGenerator[AsyncClient, None]:
     async with AsyncClient(app=app, base_url="http://test") as c:
         yield c
+
+
+@pytest.fixture
+def user_factory(db):
+    async def _factory(**kwargs):
+        return await create_user(db, **kwargs)
+    return _factory
 
 
 # USERS
