@@ -33,12 +33,22 @@ from app.api.v1.deps import get_current_user
 router = APIRouter(prefix="/users", tags=["users"])
 
 
-@router.post("/", response_model=UserRead)
+# @router.post("/", response_model=UserRead)
+# async def create_user(
+#         user_in: UserCreate,
+#         db: AsyncSession = Depends(get_db),
+#     ):
+#     return await service.create_user(db, user_in)
+# @router.post("/", response_model=UserRead)
 async def create_user(
-        user_in: UserCreate,
-        db: AsyncSession = Depends(get_db),
-    ):
-    return await service.create_user(db, user_in)
+    user_in: UserCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    async with db.begin():
+        user = await service.create_user(db, user_in)
+
+    return user
+
 
 
 @router.post("/login", response_model=Token)

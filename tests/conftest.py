@@ -13,7 +13,7 @@ from sqlalchemy.pool import NullPool
 from app.main import app
 from app.db.base import Base
 from app.core.dependencies import get_db
-from app.core.security import hash_password
+from app.core.security import get_password_hash as hash_password
 from app.core.config import settings
 from app.users.models import User
 from app.users.roles import UserRole
@@ -59,14 +59,14 @@ async def async_session_maker(engine):
 @pytest.fixture
 async def db(async_session_maker) -> AsyncGenerator[AsyncSession, None]:
     async with async_session_maker() as session:
-        async with session.begin():
-            yield session
-            await session.rollback()
+        yield session
+        await session.rollback()
+            
 
 
 # DEPENDENCY OVERRIDE
 @pytest.fixture(autouse=True)
-def override_get_db(db: AsyncSession):
+async def override_get_db(db: AsyncSession):
     async def _get_db_override():
         yield db
 

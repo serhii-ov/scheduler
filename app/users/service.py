@@ -8,6 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
 from app.core.phone_normalizer import normalize_phone
+from app.core.security import get_password_hash
+from app.users.exceptions import UserAlreadyExistsError
 from app.users.models import User
 from app.users.schemas import UserCreate, UserUpdate
 from app.users.authorization import (
@@ -18,29 +20,55 @@ from app.users.permissions import Permission
 from app.users import crud
 
 
+# async def create_user(
+#         db: AsyncSession,
+#         user_in: UserCreate,
+#     ) -> User:
+#     try:
+#         # ✅ normalize once here
+#         normalized_phone = normalize_phone(user_in.phone_number)
+
+#         # create a copy with normalized data
+#         user_data = user_in.model_copy(
+#             update={"phone_number": normalized_phone}
+#         )
+
+#         user = await crud.create_user(db, user_data)
+
+#         await db.commit()
+#         await db.refresh(user)
+
+#         return user
+
+#     except IntegrityError:
+#         await db.rollback()
+#         raise
+
 async def create_user(
         db: AsyncSession,
         user_in: UserCreate,
     ) -> User:
-    try:
-        # ✅ normalize once here
-        normalized_phone = normalize_phone(user_in.phone_number)
 
-        # create a copy with normalized data
-        user_data = user_in.model_copy(
-            update={"phone_number": normalized_phone}
+    normalized_phone = normalize_phone(user_in.phone_number)
+    hashed_password = get_password_hash(user_in.password)
+
+    try:
+        user = await crud.create_user(
+            db,
+            name=user_in.name,
+            phone_number=normalized_phone,
+            email=user_in.email,
+            role=user_in.role,
+            is_active=user_in.is_active,
+            hashed_password=hashed_password,
+        )
+    except IntegrityError:
+        raise UserAlreadyExistsError(
+            "User with this phone number already exists"
         )
 
-        user = await crud.create_user(db, user_data)
+    return user
 
-        await db.commit()
-        await db.refresh(user)
-
-        return user
-
-    except IntegrityError:
-        await db.rollback()
-        raise
 
 
 async def read_user(

@@ -6,3 +6,7 @@ class PermissionDenied(Exception):
 class NotFound(Exception):
     """Optional: domain-level not found exception."""
     pass
+
+class UserAlreadyExistsError(Exception):
+    """Raised when trying to create a user that already exists."""
+    pass

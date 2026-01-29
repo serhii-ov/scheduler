@@ -9,27 +9,52 @@ from sqlalchemy import select
 
 from app.users.models import User
 from app.users.schemas import UserCreate, UserUpdate
+from app.users.roles import UserRole
 from app.core.security import (
                                 verify_password, 
                                 get_password_hash,
                             )
 
 
+# async def create_user(
+#     db: AsyncSession,
+#     user_in: UserCreate,
+# ) -> User:
+#     user = User(
+#         name=user_in.name,
+#         phone_number=user_in.phone_number,
+#         email=user_in.email,
+#         role=user_in.role,
+#         is_active=user_in.is_active,
+#         hashed_password=get_password_hash(user_in.password),
+#     )
+
+#     db.add(user)
+#     return user
 async def create_user(
     db: AsyncSession,
-    user_in: UserCreate,
+    *,
+    name: str,
+    phone_number: str,
+    email: str | None,
+    role: UserRole,
+    is_active: bool,
+    hashed_password: str,
 ) -> User:
     user = User(
-        name=user_in.name,
-        phone_number=user_in.phone_number,
-        email=user_in.email,
-        role=user_in.role,
-        is_active=user_in.is_active,
-        hashed_password=get_password_hash(user_in.password),
+        name=name,
+        phone_number=phone_number,
+        email=email,
+        role=role,
+        is_active=is_active,
+        hashed_password=hashed_password,
     )
 
     db.add(user)
+    await db.flush()  # ensures user.id exists
+
     return user
+
 
 
 async def get_user_by_phone(

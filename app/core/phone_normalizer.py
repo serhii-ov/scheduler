@@ -17,7 +17,7 @@ def normalize_phone(phone: str) -> str:
     phone = phone.strip().replace(" ", "").replace("-", "")
 
     if phone.startswith("0"):
-        phone = "+38" + phone[1:]
+        phone = "+38" + phone[:]
 
     if not phone.startswith("+"):
         phone = "+" + phone
