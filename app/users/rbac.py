@@ -20,7 +20,7 @@ ROLE_PERMISSIONS: dict[UserRole, set[Permission]] = {
         Permission.USER_LIST,
     },
     UserRole.ELECTRICIAN: {
-        Permission.USER_READ,
+        # Permission.USER_READ,
         Permission.TASK_CREATE,
     },
 }

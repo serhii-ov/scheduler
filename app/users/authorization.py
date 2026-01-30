@@ -14,7 +14,6 @@ def has_permission(user: User, permission: Permission) -> bool:
     return permission in ROLE_PERMISSIONS.get(user.role, set())
 
 
-# “Owner OR admin can delete user”
 def require_owner_or_permission(
         *,
         current_user: User,

@@ -1,9 +1,3 @@
-"""
-This logic is business truth, not HTTP logic:
-🔥 No role checks
-🔥 Readable
-🔥 Scales naturally
-"""
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
@@ -19,30 +13,6 @@ from app.users.authorization import (
 from app.users.permissions import Permission
 from app.users import crud
 
-
-# async def create_user(
-#         db: AsyncSession,
-#         user_in: UserCreate,
-#     ) -> User:
-#     try:
-#         # ✅ normalize once here
-#         normalized_phone = normalize_phone(user_in.phone_number)
-
-#         # create a copy with normalized data
-#         user_data = user_in.model_copy(
-#             update={"phone_number": normalized_phone}
-#         )
-
-#         user = await crud.create_user(db, user_data)
-
-#         await db.commit()
-#         await db.refresh(user)
-
-#         return user
-
-#     except IntegrityError:
-#         await db.rollback()
-#         raise
 
 async def create_user(
         db: AsyncSession,

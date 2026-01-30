@@ -12,25 +12,9 @@ from app.users.schemas import UserCreate, UserUpdate
 from app.users.roles import UserRole
 from app.core.security import (
                                 verify_password, 
-                                get_password_hash,
                             )
 
 
-# async def create_user(
-#     db: AsyncSession,
-#     user_in: UserCreate,
-# ) -> User:
-#     user = User(
-#         name=user_in.name,
-#         phone_number=user_in.phone_number,
-#         email=user_in.email,
-#         role=user_in.role,
-#         is_active=user_in.is_active,
-#         hashed_password=get_password_hash(user_in.password),
-#     )
-
-#     db.add(user)
-#     return user
 async def create_user(
     db: AsyncSession,
     *,
@@ -99,7 +83,10 @@ async def get_users(
         limit: int = 20,
     ) -> list[User]:
     result = await db.execute(
-        select(User).offset(skip).limit(limit)
+        select(User)
+        .order_by(User.id)
+        .offset(skip)
+        .limit(limit)
     )
     return result.scalars().all()
 
@@ -124,4 +111,3 @@ async def delete_user(
     ) -> None:
     
     await db.delete(user)
-
