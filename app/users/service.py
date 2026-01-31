@@ -100,26 +100,18 @@ async def delete_user(
         target_user: User,
         current_user: User,
     ) -> None:
-    """
-    authorization + transaction
-
-    Why async with db.begin()?
-    auto-commit on success
-    auto-rollback on error
-    no boilerplate
-    no forgotten rollback bugs
-    """
+    
     require_owner_or_permission(
         current_user=current_user,
         target_user=target_user,
         permission=Permission.USER_DELETE,
     )
 
-    async with db.begin():
-        await crud.delete_user(
+    await crud.delete_user(
             db=db,
             user=target_user,
         )
+        
 
 
 async def list_users(

@@ -20,15 +20,15 @@ from app.users.roles import UserRole
 from tests.factories.user import create_user
 
 
+TEST_DATABASE_URL = settings.TEST_DATABASE_URL
+
+
 # EVENT LOOP (required for pytest + asyncio on some platforms)
 @pytest.fixture(scope="session")
 def event_loop():
     loop = asyncio.new_event_loop()
     yield loop
     loop.close()
-
-
-TEST_DATABASE_URL = settings.TEST_DATABASE_URL
 
 
 @pytest.fixture(scope="session")

@@ -11,6 +11,9 @@ pytestmark = pytest.mark.asyncio
 
 
 async def test_get_users_empty(db: AsyncSession):
+    await db.execute(delete(User))
+    await db.commit()
+    
     users = await get_users(db)
 
     assert users == []
