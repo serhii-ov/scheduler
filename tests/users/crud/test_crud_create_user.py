@@ -1,3 +1,4 @@
+import uuid
 import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,10 +10,13 @@ from app.users.roles import UserRole
 
 @pytest.mark.asyncio
 async def test_create_user_persisted(db: AsyncSession):
+
+    phone_number = f"+38050{uuid.uuid4().int % 10**7:07}"
+
     user = await create_user(
         db,
         name="Test User",
-        phone_number="+380501234567",
+        phone_number=phone_number,
         email="test@example.com",
         role=UserRole.ELECTRICIAN,
         is_active=True,
@@ -29,7 +33,7 @@ async def test_create_user_persisted(db: AsyncSession):
     db_user = result.scalar_one()
 
     assert db_user.name == "Test User"
-    assert db_user.phone_number == "+380501234567"
+    assert db_user.phone_number == phone_number
     assert db_user.email == "test@example.com"
     assert db_user.role == UserRole.ELECTRICIAN
     assert db_user.is_active is True

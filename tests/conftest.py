@@ -2,13 +2,14 @@ import asyncio
 from typing import AsyncGenerator
 
 import pytest
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
 from sqlalchemy.pool import NullPool
+# from asgi_lifespan import LifespanManager
 
 from app.main import app
 from app.db.base import Base
@@ -61,26 +62,55 @@ async def async_session_maker(engine):
 async def db(async_session_maker) -> AsyncGenerator[AsyncSession, None]:
     async with async_session_maker() as session:
         yield session
-        await session.rollback()
             
 
+# # DEPENDENCY OVERRIDE
+# @pytest.fixture(autouse=True)
+# async def override_get_db(db: AsyncSession):
+#     async def _get_db_override():
+#         yield db
 
-# DEPENDENCY OVERRIDE
+#     app.dependency_overrides[get_db] = _get_db_override
+#     yield
+#     app.dependency_overrides.clear()
+
 @pytest.fixture(autouse=True)
 async def override_get_db(db: AsyncSession):
     async def _get_db_override():
-        yield db
+        try:
+            yield db
+            await db.commit()
+        except Exception:
+            await db.rollback()
+            raise
 
     app.dependency_overrides[get_db] = _get_db_override
     yield
     app.dependency_overrides.clear()
 
 
-# HTTP CLIENT
+# @pytest.fixture
+# async def async_client():
+#     transport = ASGITransport(app=app)
+#     async with AsyncClient(transport=transport, base_url="http://test") as client:
+#         yield client
+
 @pytest.fixture
-async def client() -> AsyncGenerator[AsyncClient, None]:
-    async with AsyncClient(app=app, base_url="http://test") as c:
-        yield c
+async def async_client(db: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
+    async def override_get_db():
+        yield db
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(
+        transport=transport,
+        base_url="http://test",
+    ) as client:
+        yield client
+
+    app.dependency_overrides.clear()
+
 
 
 @pytest.fixture

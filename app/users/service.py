@@ -5,6 +5,7 @@ from app.core.phone_normalizer import normalize_phone
 from app.core.security import get_password_hash
 from app.users.exceptions import UserAlreadyExistsError
 from app.users.models import User
+from app.users.roles import UserRole
 from app.users.schemas import UserCreate, UserUpdate
 from app.users.authorization import (
     require_owner_or_permission,
@@ -28,16 +29,40 @@ async def create_user(
             name=user_in.name,
             phone_number=normalized_phone,
             email=user_in.email,
-            role=user_in.role,
-            is_active=user_in.is_active,
             hashed_password=hashed_password,
+
+            role=user_in.role,
+            is_active=user_in.is_active,   
         )
+
+        await db.commit()
+        await db.refresh(user)
+
     except IntegrityError:
+        await db.rollback()
         raise UserAlreadyExistsError(
             "User with this phone number already exists"
         )
 
     return user
+
+# async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
+#     user = User(
+#         name=user_in.name,
+#         phone_number=user_in.phone_number,
+#         email=user_in.email,
+#         hashed_password=hash_password(user_in.password),
+
+#         # server-owned
+#         role=UserRole.ELECTRICIAN,
+#         is_active=True,
+#     )
+
+#     db.add(user)
+#     await db.commit()
+#     await db.refresh(user)
+#     return user
+
 
 
 
@@ -85,12 +110,12 @@ async def update_user(
             user_in=user_in,
         )
 
-        await db.commit()
-        await db.refresh(target_user)
+        # await db.commit()
+        # await db.refresh(target_user)
         return target_user
 
     except IntegrityError:
-        await db.rollback()
+        # await db.rollback()
         raise
 
 

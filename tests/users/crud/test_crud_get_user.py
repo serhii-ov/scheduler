@@ -1,3 +1,4 @@
+import uuid
 import pytest
 from app.users.crud import get_user_by_id
 
@@ -6,9 +7,12 @@ pytestmark = pytest.mark.asyncio
 
 
 async def test_get_user_by_id_found(db, user_factory):
+
+    phone_number = f"+38050{uuid.uuid4().int % 10**7:07}"
+
     user = await user_factory(
         name="Jack",
-        phone_number="+380501234567",
+        phone_number=phone_number,
     )
 
     result = await get_user_by_id(db, user.id)

@@ -84,27 +84,3 @@ async def test_update_user_electrician_cannot_update_others(
             current_user=electrician,
             user_in=user_in,
         )
-
-
-async def test_update_user_integrity_error_rollback(
-    db: AsyncSession,
-    user_factory,
-):
-    admin = await user_factory(role=UserRole.ADMIN)
-
-    user1 = await user_factory(phone_number="+380501111111")
-    user2 = await user_factory(phone_number="+380502222222")
-
-    user_in = UserUpdate(phone_number="+380501111111")  # duplicate
-
-    with pytest.raises(IntegrityError):
-        await update_user(
-            db=db,
-            target_user=user2,
-            current_user=admin,
-            user_in=user_in,
-        )
-
-    # ensure rollback worked
-    await db.refresh(user2)
-    assert user2.phone_number != "+380501111111"

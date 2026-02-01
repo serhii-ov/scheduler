@@ -7,7 +7,7 @@ from app.core.config import settings
 from app.core.dependencies import get_db
 from app.users import crud
 from app.users.models import User
-from app.users.roles import UserRole
+# from app.users.roles import UserRole
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/users/users/login")

@@ -27,37 +27,29 @@ class UserRole(str, Enum):
     ENGINEER = "engineer"
 
 
-class BaseUser(BaseModel):
+class UserBase(BaseModel):
     name: str
     phone_number: str
     email: Optional[EmailStr] = None
-    role: UserRole
+    role: UserRole = UserRole.ELECTRICIAN
     is_active: bool = True
 
-
-class UserCreate(BaseModel):
-    phone_number: str
+    
+class UserCreate(UserBase):
     password: str
 
     @field_validator("phone_number")
     @classmethod
-    def validate_phone(cls, v: str) -> str:
-        # validation only (no DB logic)
-        normalize_phone(v)
-        return v
-
-
-class UserCreate(BaseUser):
-    password: str
-
-    @field_validator("phone_number")
     def validate_and_normalize_phone(cls, v: str) -> str:
-        return normalize_phone(v)   
+        return normalize_phone(v)
+
     
 
 
-class UserRead(BaseUser):
+class UserRead(UserBase):
     id: int
+    # role: UserRole
+    # is_active: bool
 
     class Config:
         """

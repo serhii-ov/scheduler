@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.users.models import User
-from app.users.schemas import UserCreate, UserUpdate
+from app.users.schemas import UserUpdate
 from app.users.roles import UserRole
 from app.core.security import (
                                 verify_password, 
