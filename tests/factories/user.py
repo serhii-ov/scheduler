@@ -4,7 +4,7 @@ from typing import Any
 from app.users.models import User
 
 
-DEFAULT_PASSWORD_HASH = "hashed_password"
+DEFAULT_PASSWORD = "default_password"
 
 
 def unique_email():
@@ -25,7 +25,7 @@ async def create_user(
         "email": unique_email(),
         "role": "electrician",
         "is_active": True,
-        "hashed_password": DEFAULT_PASSWORD_HASH,
+        "hashed_password": DEFAULT_PASSWORD,
     }
 
     data.update(overrides)
@@ -33,6 +33,4 @@ async def create_user(
     user = User(**data)
     db.add(user)
     await db.flush()
-    # await db.commit()
-    # await db.refresh(user)
     return user
