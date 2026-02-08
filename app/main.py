@@ -9,6 +9,10 @@ from app.users.exceptions import (
     PermissionDenied, NotFound,
     )
 
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi.requests import Request
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -22,7 +26,18 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+templates = Jinja2Templates(directory="app/templates")
+
 app.include_router(api_v1_router, prefix="/api")
+
+
+@app.get("/")
+async def index(request: Request):
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request},
+    )
 
 
 @app.exception_handler(PermissionDenied)

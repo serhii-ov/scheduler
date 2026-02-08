@@ -33,4 +33,5 @@ async def create_user(
     user = User(**data)
     db.add(user)
     await db.flush()
+     
     return user
